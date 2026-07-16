@@ -23,6 +23,10 @@ def create_app(config_class=Config):
     )
     app.config.from_object(config_class)
 
+    from app.settings_store import apply_settings_to_app
+
+    apply_settings_to_app(app)
+
     upload_dir = Path(app.config["UPLOAD_FOLDER"])
     upload_dir.mkdir(parents=True, exist_ok=True)
 

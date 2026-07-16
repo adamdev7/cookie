@@ -80,7 +80,7 @@
   </section>
 
   {% if featured %}
-  <section class="mb-5">
+  <section class="mb-5" id="saveurs">
     <div class="page-header">
       <h2>Nos saveurs</h2>
       <p class="subtitle">Aussi disponibles à l'unité</p>
@@ -99,6 +99,7 @@
               <span class="price-tag">${{ "%.2f"|format(product.price_float) }}</span>
               <form action="{{ url_for('public.cart_add', product_id=product.id) }}" method="post">
                 <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="next" value="{{ url_for('public.index') }}">
                 <button type="submit" class="btn btn-cookie btn-sm rounded-pill">Ajouter</button>
               </form>
             </div>

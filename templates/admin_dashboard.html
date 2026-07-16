@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Admin — {{ config.BUSINESS_NAME }}</title>
+  <title>Admin — {{ settings.BUSINESS_NAME }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/style.css', v='20260716c') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css', v='20260716d') }}" rel="stylesheet">
 </head>
-<body style="background: #FDFBF7; min-height: 100vh;">
+<body class="admin-body">
   <nav class="navbar navbar-dark bg-cookie py-2 py-md-3">
-    <div class="container-fluid container-site d-flex flex-wrap admin-topbar justify-content-between align-items-center">
-      <span class="navbar-brand mb-0">Admin</span>
+    <div class="container-fluid container-site d-flex flex-wrap admin-topbar justify-content-between align-items-center gap-2">
+      <div>
+        <span class="navbar-brand mb-0 d-block">Tableau de bord</span>
+        <small class="text-white-50 d-none d-sm-inline">{{ settings.BUSINESS_NAME }}</small>
+      </div>
       <div class="admin-nav-actions">
         <a href="{{ url_for('public.index') }}" class="btn btn-outline-light btn-sm rounded-pill">Boutique</a>
         <a href="{{ url_for('admin.logout') }}" class="btn btn-light btn-sm rounded-pill">Déconnexion</a>
@@ -21,60 +24,87 @@
   <div class="container-fluid container-site py-3 py-md-4 site-section">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show">{{ message }}
+        <div class="alert alert-{{ category }} alert-dismissible fade show rounded-4">{{ message }}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       {% endfor %}
     {% endwith %}
 
     <div class="row g-3 mb-4">
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-lg-3">
         <div class="card stat-card h-100">
           <div class="card-body">
-            <div class="text-muted small">Total orders</div>
+            <div class="text-muted small">Commandes</div>
             <div class="fs-3 fw-bold">{{ stats.total_orders }}</div>
+            {% if stats.new_orders %}<div class="small text-brand-pink fw-semibold">{{ stats.new_orders }} nouvelle(s)</div>{% endif %}
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-lg-3">
         <div class="card stat-card h-100">
           <div class="card-body">
-            <div class="text-muted small">Total sales</div>
+            <div class="text-muted small">Ventes</div>
             <div class="fs-3 fw-bold">${{ "%.2f"|format(stats.total_sales) }}</div>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-lg-3">
         <div class="card stat-card h-100">
           <div class="card-body">
-            <div class="text-muted small">Cash / e-Transfer</div>
-            <div class="small">${{ "%.2f"|format(stats.cash_sales) }} / ${{ "%.2f"|format(stats.etransfer_sales) }}</div>
+            <div class="text-muted small">Comptant / Interac</div>
+            <div class="small fw-semibold">${{ "%.2f"|format(stats.cash_sales) }} / ${{ "%.2f"|format(stats.etransfer_sales) }}</div>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-lg-3">
         <div class="card stat-card h-100">
           <div class="card-body">
-            <div class="text-muted small">Top cookie</div>
+            <div class="text-muted small">Top saveur</div>
             <div class="fw-bold">{{ stats.popular_cookie }}</div>
-            <div class="small text-muted">{{ stats.popular_qty }} sold</div>
+            <div class="small text-muted">{{ stats.popular_qty }} vendus</div>
           </div>
         </div>
       </div>
     </div>
 
-    <ul class="nav nav-tabs nav-fill flex-nowrap mb-3" role="tablist" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-      <li class="nav-item"><a class="nav-link active text-nowrap" data-bs-toggle="tab" href="#orders-tab">Commandes</a></li>
-      <li class="nav-item"><a class="nav-link text-nowrap" data-bs-toggle="tab" href="#products-tab" id="products">Produits</a></li>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="admin-status-card {% if notif.mail %}is-ready{% else %}is-missing{% endif %}">
+          <div class="admin-status-card__label">Gmail</div>
+          <div class="admin-status-card__value">{% if notif.mail %}Configuré{% else %}À configurer{% endif %}</div>
+          <div class="admin-status-card__hint">Confirmations clients</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="admin-status-card {% if notif.telegram %}is-ready{% else %}is-missing{% endif %}">
+          <div class="admin-status-card__label">Telegram</div>
+          <div class="admin-status-card__value">{% if notif.telegram %}Configuré{% else %}À configurer{% endif %}</div>
+          <div class="admin-status-card__hint">Alertes commandes + boutons</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="admin-status-card {% if notif.whatsapp %}is-ready{% else %}is-missing{% endif %}">
+          <div class="admin-status-card__label">WhatsApp</div>
+          <div class="admin-status-card__value">{% if notif.whatsapp %}Actif{% else %}Désactivé{% endif %}</div>
+          <div class="admin-status-card__hint">Alertes sur votre téléphone</div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-pills admin-tabs flex-nowrap mb-3 gap-2" role="tablist" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'orders' %}active{% endif %} text-nowrap" data-bs-toggle="tab" href="#orders-tab">Commandes</a></li>
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'products' %}active{% endif %} text-nowrap" data-bs-toggle="tab" href="#products-tab" id="products">Produits</a></li>
+      <li class="nav-item"><a class="nav-link {% if active_tab == 'settings' %}active{% endif %} text-nowrap" data-bs-toggle="tab" href="#settings-tab">Notifications</a></li>
     </ul>
 
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="orders-tab">
+      <div class="tab-pane fade {% if active_tab == 'orders' %}show active{% endif %}" id="orders-tab">
         <form method="get" class="row g-2 mb-3 align-items-end">
+          <input type="hidden" name="tab" value="orders">
           <div class="col-12 col-sm-auto">
-            <label class="form-label small">Filtrer</label>
+            <label class="form-label small fw-semibold">Filtrer par statut</label>
             <select name="status" class="form-select" onchange="this.form.submit()">
-              <option value="">All</option>
+              <option value="">Toutes</option>
               {% for s in statuses %}
               <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
               {% endfor %}
@@ -116,20 +146,20 @@
             </form>
           </div>
           {% else %}
-          <div class="panel-card panel-body text-center text-muted py-4">No orders yet</div>
+          <div class="panel-card panel-body text-center text-muted py-4">Aucune commande pour le moment</div>
           {% endfor %}
         </div>
-        <div class="table-responsive table-responsive-mobile d-none d-md-block">
-          <table class="table table-sm table-hover bg-white rounded shadow-sm" style="min-width:720px">
+        <div class="table-responsive table-responsive-mobile d-none d-md-block panel-card overflow-hidden">
+          <table class="table table-sm table-hover mb-0 align-middle" style="min-width:720px">
             <thead class="table-light">
               <tr>
                 <th>#</th>
-                <th>Customer</th>
-                <th>Items</th>
+                <th>Client</th>
+                <th>Articles</th>
                 <th>Total</th>
                 <th>Type</th>
-                <th>Pay</th>
-                <th>Status</th>
+                <th>Paiement</th>
+                <th>Statut</th>
                 <th>Date</th>
               </tr>
             </thead>
@@ -156,7 +186,7 @@
                 <td>{{ order.delivery_type }}</td>
                 <td>{{ order.payment_method }}</td>
                 <td>
-                  <form action="{{ url_for('admin.update_order_status', order_id=order.id) }}?status={{ status_filter }}" method="post" class="d-flex flex-column flex-sm-row gap-1">
+                  <form action="{{ url_for('admin.update_order_status', order_id=order.id) }}?status={{ status_filter }}" method="post" class="d-flex gap-1">
                     <select name="status" class="form-select form-select-sm flex-grow-1" style="min-width:8rem">
                       {% for s in statuses %}
                       <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
@@ -168,51 +198,47 @@
                 <td class="small text-nowrap">{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else '' }}</td>
               </tr>
               {% else %}
-              <tr><td colspan="8" class="text-center text-muted py-4">No orders yet</td></tr>
+              <tr><td colspan="8" class="text-center text-muted py-4">Aucune commande</td></tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="tab-pane fade" id="products-tab">
-        <div class="card mb-4">
-          <div class="card-header">Add product</div>
-          <div class="card-body">
-            <form action="{{ url_for('admin.add_product') }}" method="post" enctype="multipart/form-data" class="row g-2">
-              <div class="col-12 col-md-3"><input type="text" name="name" class="form-control" placeholder="Nom" required></div>
-              <div class="col-6 col-md-3"><input type="number" step="0.01" name="price" class="form-control" placeholder="Prix" required inputmode="decimal"></div>
-              <div class="col-12 col-md-4"><input type="text" name="description" class="form-control" placeholder="Description"></div>
-              <div class="col-12 col-md-2"><input type="file" name="image" class="form-control" accept="image/*"></div>
-              <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" name="is_active" checked> <label class="form-check-label">Active</label></div></div>
-              <div class="col-12"><button class="btn btn-cookie rounded-pill">Add product</button></div>
-            </form>
-          </div>
+      <div class="tab-pane fade {% if active_tab == 'products' %}show active{% endif %}" id="products-tab">
+        <div class="panel-card panel-body mb-4">
+          <h2 class="h5 text-brand-pink mb-3">Ajouter un produit</h2>
+          <form action="{{ url_for('admin.add_product') }}" method="post" enctype="multipart/form-data" class="row g-2">
+            <div class="col-12 col-md-3"><input type="text" name="name" class="form-control" placeholder="Nom" required></div>
+            <div class="col-6 col-md-2"><input type="number" step="0.01" name="price" class="form-control" placeholder="Prix" required inputmode="decimal"></div>
+            <div class="col-12 col-md-4"><input type="text" name="description" class="form-control" placeholder="Description"></div>
+            <div class="col-12 col-md-3"><input type="file" name="image" class="form-control" accept="image/*"></div>
+            <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" name="is_active" checked id="newActive"> <label class="form-check-label" for="newActive">Actif</label></div></div>
+            <div class="col-12"><button class="btn btn-cookie rounded-pill">Ajouter</button></div>
+          </form>
         </div>
         <div class="row g-3">
           {% for product in products %}
           <div class="col-md-6 col-lg-4">
-            <div class="card h-100">
+            <div class="panel-card h-100 overflow-hidden">
               {% if product.image_url %}
-              <img src="{{ url_for('static', filename=product.image_url) }}" class="card-img-top" style="height:140px;object-fit:cover" alt="">
+              <img src="{{ url_for('static', filename=product.image_url) }}" class="w-100" style="height:140px;object-fit:cover" alt="">
               {% endif %}
-              <div class="card-body">
+              <div class="panel-body">
                 <form action="{{ url_for('admin.edit_product', product_id=product.id) }}" method="post" enctype="multipart/form-data">
                   <input type="text" name="name" class="form-control form-control-sm mb-1" value="{{ product.name }}">
                   <textarea name="description" class="form-control form-control-sm mb-1" rows="2">{{ product.description or '' }}</textarea>
                   <input type="number" step="0.01" name="price" class="form-control form-control-sm mb-1" value="{{ product.price }}">
                   <input type="file" name="image" class="form-control form-control-sm mb-1" accept="image/*">
                   <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %}>
-                    <label class="form-check-label small">Active</label>
+                    <input class="form-check-input" type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %} id="active{{ product.id }}">
+                    <label class="form-check-label small" for="active{{ product.id }}">Actif</label>
                   </div>
-                  <div class="d-flex gap-1">
-                    <button class="btn btn-cookie btn-sm flex-grow-1">Save</button>
-                  </div>
+                  <button class="btn btn-cookie btn-sm w-100 rounded-pill">Enregistrer</button>
                 </form>
                 {% if product.is_active %}
-                <form action="{{ url_for('admin.delete_product', product_id=product.id) }}" method="post" class="mt-1" onsubmit="return confirm('Deactivate this product?');">
-                  <button class="btn btn-outline-danger btn-sm w-100">Deactivate</button>
+                <form action="{{ url_for('admin.delete_product', product_id=product.id) }}" method="post" class="mt-1" onsubmit="return confirm('Désactiver ce produit?');">
+                  <button class="btn btn-outline-danger btn-sm w-100 rounded-pill">Désactiver</button>
                 </form>
                 {% endif %}
               </div>
@@ -221,13 +247,175 @@
           {% endfor %}
         </div>
       </div>
+
+      <div class="tab-pane fade {% if active_tab == 'settings' %}show active{% endif %}" id="settings-tab">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <form action="{{ url_for('admin.save_notification_settings') }}" method="post" class="panel-card panel-body">
+              <h2 class="h4 text-brand-pink mb-1">Configuration des notifications</h2>
+              <p class="text-muted small mb-4">Remplissez une section à la fois. Les secrets déjà enregistrés restent en place si vous laissez le champ vide.</p>
+
+              <h3 class="h6 text-uppercase tracking-wide mb-3">Boutique</h3>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="BUSINESS_NAME">Nom de la boutique</label>
+                  <input class="form-control" id="BUSINESS_NAME" name="BUSINESS_NAME" value="{{ settings.BUSINESS_NAME or '' }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="CONTACT_PHONE">Téléphone public</label>
+                  <input class="form-control" id="CONTACT_PHONE" name="CONTACT_PHONE" value="{{ settings.CONTACT_PHONE or '' }}" placeholder="514-594-4092">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label fw-semibold" for="ETRANSFER_EMAIL">Courriel Interac</label>
+                  <input type="email" class="form-control" id="ETRANSFER_EMAIL" name="ETRANSFER_EMAIL" value="{{ settings.ETRANSFER_EMAIL or '' }}">
+                </div>
+              </div>
+
+              <hr class="my-4">
+              <h3 class="h6 text-uppercase mb-2">1 · Gmail (confirmations clients)</h3>
+              <ol class="setup-steps small text-muted mb-3">
+                <li>Activez la validation en 2 étapes sur votre compte Google.</li>
+                <li>Allez dans <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">Mots de passe des applications</a>.</li>
+                <li>Créez un mot de passe pour « Courrier », puis collez-le ci-dessous (16 caractères).</li>
+              </ol>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="MAIL_USERNAME">Adresse Gmail</label>
+                  <input type="email" class="form-control" id="MAIL_USERNAME" name="MAIL_USERNAME" value="{{ settings.MAIL_USERNAME or '' }}" placeholder="vous@gmail.com" autocomplete="off">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="MAIL_PASSWORD">Mot de passe d'application</label>
+                  <input type="password" class="form-control" id="MAIL_PASSWORD" name="MAIL_PASSWORD" placeholder="{% if secrets.MAIL_PASSWORD %}Conservé {{ secrets.MAIL_PASSWORD }} — laisser vide pour garder{% else %}xxxx xxxx xxxx xxxx{% endif %}" autocomplete="new-password">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="MAIL_DEFAULT_SENDER">Expéditeur (optionnel)</label>
+                  <input type="email" class="form-control" id="MAIL_DEFAULT_SENDER" name="MAIL_DEFAULT_SENDER" value="{{ settings.MAIL_DEFAULT_SENDER or '' }}" placeholder="Souvent le même que Gmail">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold" for="MAIL_SERVER">Serveur SMTP</label>
+                  <input class="form-control" id="MAIL_SERVER" name="MAIL_SERVER" value="{{ settings.MAIL_SERVER or 'smtp.gmail.com' }}">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold" for="MAIL_PORT">Port</label>
+                  <input class="form-control" id="MAIL_PORT" name="MAIL_PORT" value="{{ settings.MAIL_PORT or 587 }}">
+                </div>
+                <div class="col-12">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="MAIL_USE_TLS" id="MAIL_USE_TLS" {% if settings.MAIL_USE_TLS %}checked{% endif %}>
+                    <label class="form-check-label" for="MAIL_USE_TLS">Utiliser TLS (recommandé)</label>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-4">
+              <h3 class="h6 text-uppercase mb-2">2 · Telegram (alertes commandes)</h3>
+              <ol class="setup-steps small text-muted mb-3">
+                <li>Ouvrez Telegram et parlez à <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a> → <code>/newbot</code>.</li>
+                <li>Copiez le <strong>token</strong> du bot ici.</li>
+                <li>Envoyez un message à votre bot, puis ouvrez<br>
+                  <code class="user-break">https://api.telegram.org/bot<strong>VOTRE_TOKEN</strong>/getUpdates</code>
+                  et copiez le <code>chat.id</code> numérique.</li>
+                <li>(Optionnel) Pour les boutons Accepter/Préparer sur le serveur public, configurez le webhook ci-dessous.</li>
+              </ol>
+              <div class="row g-3 mb-4">
+                <div class="col-md-8">
+                  <label class="form-label fw-semibold" for="TELEGRAM_BOT_TOKEN">Bot token</label>
+                  <input type="password" class="form-control" id="TELEGRAM_BOT_TOKEN" name="TELEGRAM_BOT_TOKEN" placeholder="{% if secrets.TELEGRAM_BOT_TOKEN %}Conservé {{ secrets.TELEGRAM_BOT_TOKEN }} — laisser vide pour garder{% else %}123456:ABC-DEF...{% endif %}" autocomplete="new-password">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold" for="TELEGRAM_CHAT_ID">Chat ID</label>
+                  <input class="form-control" id="TELEGRAM_CHAT_ID" name="TELEGRAM_CHAT_ID" value="{{ settings.TELEGRAM_CHAT_ID or '' }}" placeholder="ex. 512345678">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="TELEGRAM_WEBHOOK_SECRET">Secret webhook (optionnel)</label>
+                  <input type="password" class="form-control" id="TELEGRAM_WEBHOOK_SECRET" name="TELEGRAM_WEBHOOK_SECRET" placeholder="{% if secrets.TELEGRAM_WEBHOOK_SECRET %}Conservé {{ secrets.TELEGRAM_WEBHOOK_SECRET }}{% else %}mot de passe aléatoire{% endif %}" autocomplete="new-password">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">URL webhook à donner à Telegram</label>
+                  <div class="input-group">
+                    <input class="form-control" id="webhookUrl" value="{{ webhook_url }}" readonly>
+                    <button type="button" class="btn btn-outline-cookie" onclick="navigator.clipboard.writeText(document.getElementById('webhookUrl').value)">Copier</button>
+                  </div>
+                  <p class="small text-muted mt-1 mb-0">Exemple :<br>
+                    <code class="text-break">https://api.telegram.org/botTOKEN/setWebhook?url={{ webhook_url }}&amp;secret_token=VOTRE_SECRET</code>
+                  </p>
+                </div>
+              </div>
+
+              <hr class="my-4">
+              <h3 class="h6 text-uppercase mb-2">3 · WhatsApp (alertes téléphone)</h3>
+              <ol class="setup-steps small text-muted mb-3">
+                <li>Utilise <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener">CallMeBot</a> (gratuit pour alertes personnelles).</li>
+                <li>Ajoutez le contact CallMeBot et envoyez le message d'autorisation indiqué sur leur site.</li>
+                <li>Recevez votre clé API, puis entrez votre numéro (indicatif pays, ex. <code>15145944092</code>) et la clé.</li>
+              </ol>
+              <div class="row g-3 mb-4">
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" name="WHATSAPP_ENABLED" id="WHATSAPP_ENABLED" {% if settings.WHATSAPP_ENABLED %}checked{% endif %}>
+                    <label class="form-check-label fw-semibold" for="WHATSAPP_ENABLED">Activer les alertes WhatsApp</label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="WHATSAPP_PHONE">Numéro (avec indicatif pays)</label>
+                  <input class="form-control" id="WHATSAPP_PHONE" name="WHATSAPP_PHONE" value="{{ settings.WHATSAPP_PHONE or '' }}" placeholder="15145944092">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="WHATSAPP_API_KEY">Clé API CallMeBot</label>
+                  <input type="password" class="form-control" id="WHATSAPP_API_KEY" name="WHATSAPP_API_KEY" placeholder="{% if secrets.WHATSAPP_API_KEY %}Conservé {{ secrets.WHATSAPP_API_KEY }} — laisser vide pour garder{% else %}votre clé{% endif %}" autocomplete="new-password">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-cookie btn-lg rounded-pill px-4">Enregistrer la configuration</button>
+            </form>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="panel-card panel-body mb-3">
+              <h3 class="h6 text-brand-pink mb-3">Tester les envois</h3>
+              <p class="small text-muted">Après avoir enregistré, testez chaque canal.</p>
+
+              <form action="{{ url_for('admin.test_email') }}" method="post" class="mb-3">
+                <label class="form-label small fw-semibold">Courriel de test</label>
+                <div class="input-group mb-2">
+                  <input type="email" name="test_email_to" class="form-control" value="{{ settings.MAIL_USERNAME or '' }}" placeholder="vous@gmail.com" required>
+                </div>
+                <button class="btn btn-outline-cookie w-100 rounded-pill" {% if not notif.mail %}disabled{% endif %}>Tester Gmail</button>
+              </form>
+
+              <form action="{{ url_for('admin.test_telegram') }}" method="post" class="mb-3">
+                <button class="btn btn-outline-cookie w-100 rounded-pill" {% if not notif.telegram %}disabled{% endif %}>Tester Telegram</button>
+              </form>
+
+              <form action="{{ url_for('admin.test_whatsapp') }}" method="post">
+                <button class="btn btn-outline-cookie w-100 rounded-pill" {% if not notif.whatsapp %}disabled{% endif %}>Tester WhatsApp</button>
+              </form>
+            </div>
+
+            <div class="panel-card panel-body">
+              <h3 class="h6 text-brand-pink mb-2">Comment ça marche</h3>
+              <ul class="small text-muted mb-0 ps-3">
+                <li class="mb-2"><strong>Gmail</strong> envoie la confirmation au client.</li>
+                <li class="mb-2"><strong>Telegram</strong> vous alerte avec boutons de statut.</li>
+                <li><strong>WhatsApp</strong> vous envoie le résumé sur votre téléphone.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    if (window.location.hash === '#products') {
-      document.querySelector('[href="#products-tab"]').click();
-    }
+    (function () {
+      var tab = new URLSearchParams(window.location.search).get('tab');
+      var hash = window.location.hash;
+      var map = { orders: '#orders-tab', products: '#products-tab', settings: '#settings-tab' };
+      var target = map[tab] || hash;
+      if (target && document.querySelector('[href="' + target + '"]')) {
+        document.querySelector('[href="' + target + '"]').click();
+      }
+    })();
   </script>
 </body>
 </html>

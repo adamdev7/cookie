@@ -18,6 +18,13 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.models import Order, OrderItem, Product, User
+from app.settings_store import (
+    apply_settings_to_app,
+    load_settings,
+    mask_secret,
+    notification_status,
+    save_settings,
+)
 
 bp = Blueprint("admin", __name__)
 
@@ -40,7 +47,7 @@ def login():
             login_user(user)
             next_page = request.args.get("next")
             return redirect(next_page or url_for("admin.dashboard"))
-        flash("Invalid username or password.", "danger")
+        flash("Identifiant ou mot de passe invalide.", "danger")
 
     return render_template("login.html")
 
@@ -49,7 +56,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Logged out.", "info")
+    flash("Déconnecté.", "info")
     return redirect(url_for("admin.login"))
 
 
@@ -72,6 +79,8 @@ def dashboard():
         p.id: p.name
         for p in Product.query.filter_by(product_kind=Product.KIND_FLAVOR).all()
     }
+    notif = notification_status()
+    webhook_url = request.url_root.rstrip("/") + url_for("public.telegram_webhook")
 
     return render_template(
         "admin_dashboard.html",
@@ -81,15 +90,22 @@ def dashboard():
         status_filter=status_filter,
         statuses=Order.STATUSES,
         flavor_map=flavor_map,
+        notif=notif,
+        settings=current_app.config,
+        secrets={
+            "MAIL_PASSWORD": mask_secret(current_app.config.get("MAIL_PASSWORD")),
+            "TELEGRAM_BOT_TOKEN": mask_secret(current_app.config.get("TELEGRAM_BOT_TOKEN")),
+            "WHATSAPP_API_KEY": mask_secret(current_app.config.get("WHATSAPP_API_KEY")),
+            "TELEGRAM_WEBHOOK_SECRET": mask_secret(
+                current_app.config.get("TELEGRAM_WEBHOOK_SECRET")
+            ),
+        },
+        webhook_url=webhook_url,
+        active_tab=request.args.get("tab", "orders"),
     )
 
 
 def _compute_stats():
-    completed_statuses = [Order.STATUS_COMPLETED]
-    paid_orders = Order.query.filter(
-        Order.status.in_(completed_statuses + [Order.STATUS_NEW, Order.STATUS_PREPARING, Order.STATUS_OUT_FOR_DELIVERY])
-    ).filter(Order.status != Order.STATUS_CANCELLED)
-
     total_orders = Order.query.filter(Order.status != Order.STATUS_CANCELLED).count()
     total_sales = (
         db.session.query(func.coalesce(func.sum(Order.total_price), 0))
@@ -120,6 +136,7 @@ def _compute_stats():
         .filter(Order.payment_method == "etransfer", Order.status != Order.STATUS_CANCELLED)
         .scalar()
     )
+    new_count = Order.query.filter_by(status=Order.STATUS_NEW).count()
 
     return {
         "total_orders": total_orders,
@@ -128,7 +145,94 @@ def _compute_stats():
         "etransfer_sales": float(etransfer_total or 0),
         "popular_cookie": popular[0] if popular else "—",
         "popular_qty": int(popular[1]) if popular else 0,
+        "new_orders": new_count,
     }
+
+
+@bp.route("/settings", methods=["POST"])
+@login_required
+def save_notification_settings():
+    stored = load_settings()
+
+    def _get(name: str, default: str = "") -> str:
+        return request.form.get(name, default).strip()
+
+    # Business
+    stored["BUSINESS_NAME"] = _get("BUSINESS_NAME") or current_app.config.get("BUSINESS_NAME", "")
+    stored["CONTACT_PHONE"] = _get("CONTACT_PHONE") or current_app.config.get("CONTACT_PHONE", "")
+    stored["ETRANSFER_EMAIL"] = _get("ETRANSFER_EMAIL") or current_app.config.get(
+        "ETRANSFER_EMAIL", ""
+    )
+
+    # Gmail
+    stored["MAIL_SERVER"] = _get("MAIL_SERVER") or "smtp.gmail.com"
+    stored["MAIL_PORT"] = _get("MAIL_PORT") or "587"
+    stored["MAIL_USE_TLS"] = "true" if request.form.get("MAIL_USE_TLS") == "on" else "false"
+    stored["MAIL_USERNAME"] = _get("MAIL_USERNAME")
+    stored["MAIL_DEFAULT_SENDER"] = _get("MAIL_DEFAULT_SENDER") or stored["MAIL_USERNAME"]
+    mail_password = _get("MAIL_PASSWORD")
+    if mail_password:
+        stored["MAIL_PASSWORD"] = mail_password
+    elif "MAIL_PASSWORD" not in stored:
+        stored["MAIL_PASSWORD"] = current_app.config.get("MAIL_PASSWORD") or ""
+
+    # Telegram
+    tg_token = _get("TELEGRAM_BOT_TOKEN")
+    if tg_token:
+        stored["TELEGRAM_BOT_TOKEN"] = tg_token
+    elif "TELEGRAM_BOT_TOKEN" not in stored:
+        stored["TELEGRAM_BOT_TOKEN"] = current_app.config.get("TELEGRAM_BOT_TOKEN") or ""
+    stored["TELEGRAM_CHAT_ID"] = _get("TELEGRAM_CHAT_ID")
+    tg_secret = _get("TELEGRAM_WEBHOOK_SECRET")
+    if tg_secret:
+        stored["TELEGRAM_WEBHOOK_SECRET"] = tg_secret
+    elif "TELEGRAM_WEBHOOK_SECRET" not in stored:
+        stored["TELEGRAM_WEBHOOK_SECRET"] = current_app.config.get("TELEGRAM_WEBHOOK_SECRET") or ""
+
+    # WhatsApp
+    stored["WHATSAPP_ENABLED"] = "true" if request.form.get("WHATSAPP_ENABLED") == "on" else "false"
+    stored["WHATSAPP_PHONE"] = _get("WHATSAPP_PHONE")
+    wa_key = _get("WHATSAPP_API_KEY")
+    if wa_key:
+        stored["WHATSAPP_API_KEY"] = wa_key
+    elif "WHATSAPP_API_KEY" not in stored:
+        stored["WHATSAPP_API_KEY"] = current_app.config.get("WHATSAPP_API_KEY") or ""
+
+    save_settings(stored)
+    apply_settings_to_app(current_app, stored)
+    flash("Paramètres enregistrés. Les nouvelles commandes utiliseront cette configuration.", "success")
+    return redirect(url_for("admin.dashboard", tab="settings") + "#settings-tab")
+
+
+@bp.route("/settings/test/email", methods=["POST"])
+@login_required
+def test_email():
+    from app.email_service import send_test_email
+
+    to_addr = request.form.get("test_email_to", "").strip() or current_app.config.get("MAIL_USERNAME")
+    ok, message = send_test_email(to_addr)
+    flash(message, "success" if ok else "danger")
+    return redirect(url_for("admin.dashboard", tab="settings") + "#settings-tab")
+
+
+@bp.route("/settings/test/telegram", methods=["POST"])
+@login_required
+def test_telegram():
+    from app.telegram_bot import send_telegram_test
+
+    ok, message = send_telegram_test()
+    flash(message, "success" if ok else "danger")
+    return redirect(url_for("admin.dashboard", tab="settings") + "#settings-tab")
+
+
+@bp.route("/settings/test/whatsapp", methods=["POST"])
+@login_required
+def test_whatsapp():
+    from app.whatsapp_notify import send_whatsapp_test
+
+    ok, message = send_whatsapp_test()
+    flash(message, "success" if ok else "danger")
+    return redirect(url_for("admin.dashboard", tab="settings") + "#settings-tab")
 
 
 @bp.route("/orders/<int:order_id>/status", methods=["POST"])
@@ -139,11 +243,11 @@ def update_order_status(order_id):
         abort(404)
     new_status = request.form.get("status")
     if new_status not in Order.STATUSES:
-        flash("Invalid status.", "danger")
+        flash("Statut invalide.", "danger")
     else:
         order.status = new_status
         db.session.commit()
-        flash(f"Order #{order.id} updated to {order.status_label}.", "success")
+        flash(f"Commande #{order.id} → {order.status_label}.", "success")
     return redirect(url_for("admin.dashboard", status=request.args.get("status", "")))
 
 
@@ -158,12 +262,12 @@ def add_product():
     try:
         price = Decimal(price_str)
     except Exception:
-        flash("Invalid price.", "danger")
-        return redirect(url_for("admin.dashboard") + "#products")
+        flash("Prix invalide.", "danger")
+        return redirect(url_for("admin.dashboard", tab="products") + "#products-tab")
 
     if not name:
-        flash("Product name is required.", "danger")
-        return redirect(url_for("admin.dashboard") + "#products")
+        flash("Le nom du produit est requis.", "danger")
+        return redirect(url_for("admin.dashboard", tab="products") + "#products-tab")
 
     product = Product(name=name, description=description, price=price, is_active=is_active)
     image_url = _save_upload(request.files.get("image"))
@@ -172,8 +276,8 @@ def add_product():
 
     db.session.add(product)
     db.session.commit()
-    flash(f"Product '{name}' added.", "success")
-    return redirect(url_for("admin.dashboard") + "#products")
+    flash(f"Produit « {name} » ajouté.", "success")
+    return redirect(url_for("admin.dashboard", tab="products") + "#products-tab")
 
 
 @bp.route("/products/<int:product_id>/edit", methods=["POST"])
@@ -189,16 +293,16 @@ def edit_product(product_id):
     try:
         product.price = Decimal(request.form.get("price", product.price))
     except Exception:
-        flash("Invalid price.", "danger")
-        return redirect(url_for("admin.dashboard") + "#products")
+        flash("Prix invalide.", "danger")
+        return redirect(url_for("admin.dashboard", tab="products") + "#products-tab")
 
     image_url = _save_upload(request.files.get("image"))
     if image_url:
         product.image_url = image_url
 
     db.session.commit()
-    flash(f"Product '{product.name}' updated.", "success")
-    return redirect(url_for("admin.dashboard") + "#products")
+    flash(f"Produit « {product.name} » mis à jour.", "success")
+    return redirect(url_for("admin.dashboard", tab="products") + "#products-tab")
 
 
 @bp.route("/products/<int:product_id>/delete", methods=["POST"])
@@ -209,15 +313,15 @@ def delete_product(product_id):
         abort(404)
     product.is_active = False
     db.session.commit()
-    flash(f"Product '{product.name}' deactivated.", "info")
-    return redirect(url_for("admin.dashboard") + "#products")
+    flash(f"Produit « {product.name} » désactivé.", "info")
+    return redirect(url_for("admin.dashboard", tab="products") + "#products-tab")
 
 
 def _save_upload(file_storage) -> str | None:
     if not file_storage or not file_storage.filename:
         return None
     if not allowed_file(file_storage.filename):
-        flash("Invalid image type.", "danger")
+        flash("Type d'image invalide.", "danger")
         return None
     filename = secure_filename(file_storage.filename)
     base, ext = os.path.splitext(filename)

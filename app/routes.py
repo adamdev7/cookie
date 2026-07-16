@@ -113,6 +113,9 @@ def cart_add(product_id):
     add_flavor(product.id, qty)
     flash(f"{product.name} ajouté au panier.", "success")
     next_url = request.form.get("next") or url_for("public.cart")
+    # Only allow same-site relative redirects (quick-add stay on page)
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = url_for("public.cart")
     return redirect(next_url)
 
 
@@ -225,6 +228,12 @@ def _place_order(lines, subtotal, delivery_fee):
     session.modified = True
 
     send_order_notification(order)
+    try:
+        from app.whatsapp_notify import send_whatsapp_notification
+
+        send_whatsapp_notification(order)
+    except Exception as exc:
+        current_app.logger.error("WhatsApp notification error: %s", exc)
     send_order_confirmation(order)
 
     return render_template("order_confirmation.html", order=order)

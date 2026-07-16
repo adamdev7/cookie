@@ -13,22 +13,32 @@ STATUS_BUTTONS = [
 ]
 
 
+def _money(amount: float) -> str:
+    """Format money with $ after the number (FR-CA style).
+
+    CallMeBot's PHP backend treats `$29` as a variable and drops digits
+    (e.g. $29.00 → 9.00). Putting the symbol after avoids that bug.
+    """
+    return f"{float(amount):.2f} $"
+
+
 def format_order_message(order: Order) -> str:
     lines = [
-        f"🍪 <b>NEW ORDER #{order.id}</b>",
+        f"🍪💗 <b>NOUVELLE COMMANDE #{order.id}</b> 💗🍪",
+        "✨ Une commande fraîche vient d'arriver — à vos fourneaux! 👩‍🍳🔥",
         "",
-        f"<b>Customer:</b> {order.customer_name}",
-        f"<b>Phone:</b> {order.phone}",
-        f"<b>Email:</b> {order.email}",
-        f"<b>Type:</b> {order.delivery_type.upper()}",
+        f"👤 <b>Client:</b> {order.customer_name}",
+        f"📞 <b>Tél:</b> {order.phone}",
+        f"✉️ <b>Courriel:</b> {order.email}",
+        f"🚚 <b>Mode:</b> {_delivery_label(order.delivery_type)}",
     ]
     if order.delivery_type == "delivery" and order.address:
-        lines.append(f"<b>Address:</b> {order.address}")
+        lines.append(f"📍 <b>Adresse:</b> {order.address}")
     lines.extend(
         [
-            f"<b>Payment:</b> {_payment_label(order.payment_method)}",
+            f"💳 <b>Paiement:</b> {_payment_label(order.payment_method)}",
             "",
-            "<b>Items:</b>",
+            "🧁 <b>À préparer:</b>",
         ]
     )
     from app.models import Product
@@ -40,17 +50,31 @@ def format_order_message(order: Order) -> str:
         name = item.product.name if item.product else f"Product #{item.product_id}"
         if item.line_type == "box" and item.box_contents:
             mix = item.box_mix_label(flavor_map)
-            lines.append(f"  • {name} — ${item.line_total:.2f}")
+            lines.append(f"  🎁 {name} — {_money(item.line_total)}")
             if mix:
                 lines.append(f"      ↳ {mix}")
         else:
-            lines.append(f"  • {name} x{item.quantity} — ${item.line_total:.2f}")
-    lines.extend(["", f"<b>Total: ${order.total_float:.2f}</b>", f"<b>Status:</b> {order.status_label}"])
+            lines.append(f"  🍪 {name} x{item.quantity} — {_money(item.line_total)}")
+    lines.extend(
+        [
+            "",
+            f"💰 <b>Total: {_money(order.total_float)}</b>",
+            f"📌 <b>Statut:</b> {order.status_label}",
+            "",
+            "💪 Vous allez faire des heureux — merci! 💕🍪",
+        ]
+    )
     return "\n".join(lines)
 
 
 def _payment_label(method: str) -> str:
-    return "Cash" if method == "cash" else "Interac e-Transfer"
+    return "💵 Comptant" if method == "cash" else "📲 Interac e-Transfer"
+
+
+def _delivery_label(delivery_type: str) -> str:
+    if delivery_type == "delivery":
+        return "🛵 LIVRAISON"
+    return "🏪 RAMASSAGE"
 
 
 def build_inline_keyboard(order_id: int) -> dict:
@@ -59,6 +83,27 @@ def build_inline_keyboard(order_id: int) -> dict:
         for status, label in STATUS_BUTTONS
     ]
     return {"inline_keyboard": rows}
+
+
+def send_telegram_test() -> tuple[bool, str]:
+    token = current_app.config.get("TELEGRAM_BOT_TOKEN")
+    chat_id = current_app.config.get("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return False, "Token bot ou Chat ID manquant."
+
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": "✅ Test Telegram — les notifications de commandes sont prêtes.",
+        "parse_mode": "HTML",
+    }
+    try:
+        resp = requests.post(url, json=payload, timeout=10)
+        if resp.status_code >= 400:
+            return False, f"Erreur Telegram ({resp.status_code}): {resp.text[:180]}"
+        return True, "Message Telegram de test envoyé."
+    except requests.RequestException as exc:
+        return False, str(exc)
 
 
 def send_order_notification(order: Order) -> bool:

@@ -5,6 +5,27 @@ from app import mail
 from app.models import Order, Product
 
 
+def send_test_email(to_address: str) -> tuple[bool, str]:
+    """Send a short test message to verify Gmail SMTP settings."""
+    if not current_app.config.get("MAIL_USERNAME") or not current_app.config.get("MAIL_PASSWORD"):
+        return False, "Gmail non configuré (courriel et mot de passe d'application requis)."
+
+    msg = Message(
+        subject=f"Test email — {current_app.config['BUSINESS_NAME']}",
+        recipients=[to_address],
+        html=(
+            "<p>✅ La configuration Gmail fonctionne.</p>"
+            f"<p>Les confirmations de commande seront envoyées depuis "
+            f"<strong>{current_app.config.get('MAIL_DEFAULT_SENDER') or current_app.config.get('MAIL_USERNAME')}</strong>.</p>"
+        ),
+    )
+    try:
+        mail.send(msg)
+        return True, f"Courriel de test envoyé à {to_address}."
+    except Exception as exc:
+        return False, f"Échec d'envoi: {exc}"
+
+
 def send_order_confirmation(order: Order) -> bool:
     """Send confirmation email with payment instructions."""
     if not current_app.config.get("MAIL_USERNAME"):

@@ -44,6 +44,11 @@ class Config:
     TELEGRAM_CHAT_ID = _env("TELEGRAM_CHAT_ID", "")
     TELEGRAM_WEBHOOK_SECRET = _env("TELEGRAM_WEBHOOK_SECRET", "")
 
+    # WhatsApp (CallMeBot — personal order alerts)
+    WHATSAPP_ENABLED = _env("WHATSAPP_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
+    WHATSAPP_PHONE = _env("WHATSAPP_PHONE", "")
+    WHATSAPP_API_KEY = _env("WHATSAPP_API_KEY", "")
+
     # Delivery fee (optional flat fee)
     DELIVERY_FEE = float(_env("DELIVERY_FEE", "5.00"))
 

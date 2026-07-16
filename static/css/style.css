@@ -851,10 +851,77 @@ textarea.form-control {
 }
 
 /* Admin / login tweaks */
-.stat-card {
-  border: none;
+.admin-body {
+  background: #FDFBF7;
+  min-height: 100vh;
+}
+
+.admin-tabs .nav-link {
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--brand-brown-soft);
+  background: var(--brand-white);
+  border: 1px solid var(--brand-blush-deep);
+  padding: 0.55rem 1.1rem;
+}
+
+.admin-tabs .nav-link.active {
+  background: linear-gradient(135deg, var(--brand-pink), var(--brand-pink-hot));
+  border-color: transparent;
+  color: #fff;
+}
+
+.admin-status-card {
   border-radius: var(--radius-lg);
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--brand-blush-deep);
+  background: var(--brand-white);
   box-shadow: var(--shadow-card);
+  height: 100%;
+}
+
+.admin-status-card.is-ready {
+  border-color: #81c784;
+  background: linear-gradient(160deg, #fff 0%, #e8f5e9 100%);
+}
+
+.admin-status-card.is-missing {
+  border-color: #ffcc80;
+  background: linear-gradient(160deg, #fff 0%, #fff8e1 100%);
+}
+
+.admin-status-card__label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-brown-soft);
+}
+
+.admin-status-card__value {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--brand-pink);
+  line-height: 1.2;
+}
+
+.admin-status-card__hint {
+  font-size: 0.8rem;
+  color: var(--brand-brown-soft);
+}
+
+.setup-steps {
+  padding-left: 1.15rem;
+}
+
+.setup-steps li {
+  margin-bottom: 0.35rem;
+}
+
+.setup-steps code {
+  font-size: 0.78rem;
+  word-break: break-all;
 }
 
 .login-page {
