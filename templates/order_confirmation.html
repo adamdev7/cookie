@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Commande confirmée — {{ config.BUSINESS_NAME }}{% endblock %}
+{% block content %}
+<div class="container container-site text-center pb-5 site-section" style="max-width: 620px;">
+  <div class="pt-4 mb-3">
+    <span class="display-4">💗</span>
+  </div>
+  <p class="brand-script">Merci!</p>
+  <h1>{{ order.customer_name }}</h1>
+  <p class="lead">Commande <strong>#{{ order.id }}</strong> reçue avec succès.</p>
+  <p class="text-muted">Un courriel de confirmation a été envoyé à <strong>{{ order.email }}</strong>.</p>
+  <div class="panel-card panel-body text-start my-4">
+    <p><strong>Total :</strong> <span class="price-tag">${{ "%.2f"|format(order.total_float) }}</span></p>
+    <p><strong>Mode :</strong> {{ 'Livraison' if order.delivery_type == 'delivery' else 'Ramassage' }}</p>
+    <p><strong>Paiement :</strong>
+      {% if order.payment_method == 'etransfer' %}Virement Interac{% else %}Comptant{% endif %}
+    </p>
+    {% if order.payment_method == 'etransfer' %}
+    <p class="small mb-0 text-muted">Envoyez le virement à <strong>{{ config.ETRANSFER_EMAIL }}</strong> avec la mention <strong>Commande #{{ order.id }}</strong>.</p>
+    {% endif %}
+  </div>
+  <a href="{{ url_for('public.products') }}" class="btn btn-cookie btn-lg rounded-pill px-4">Commander encore</a>
+</div>
+{% endblock %}

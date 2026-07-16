@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Accueil — {{ config.BUSINESS_NAME }}{% endblock %}
+{% block content %}
+<section class="hero-split">
+  <img src="{{ url_for('static', filename='images/hero-cookies-box.png') }}" alt="Boîte de biscuits gourmet" class="hero-split__image">
+  <div class="hero-split__overlay"></div>
+  <div class="container container-site hero-split__content">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <h1>{{ config.BUSINESS_NAME }} <span class="hero-heart">♥</span></h1>
+        <p class="lead">Cookies artisanaux, préparés en petites quantités. Commandez en ligne — ramassage ou livraison — paiement comptant ou Interac.</p>
+        <a href="{{ url_for('public.products') }}" class="btn btn-cookie btn-lg rounded-pill mt-2 px-4">Commander</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container container-site pb-5 site-section">
+  <div class="row g-4 mb-5 brand-story align-items-stretch">
+    <div class="col-lg-5 p-0">
+      <img src="{{ url_for('static', filename='images/brand-boutique.png') }}" alt="Notre boutique" class="brand-story__img">
+    </div>
+    <div class="col-lg-7 brand-story__body d-flex flex-column justify-content-center">
+      <h2>Notre univers</h2>
+      <p class="text-muted mb-3">Une pâtisserie pensée comme un cocon de douceur — biscuits généreux, emballages soignés et saveurs qui font sourire.</p>
+      <ul class="list-unstyled mb-0">
+        <li class="mb-2"><span class="text-brand-pink fw-bold">♥</span> Chocolat chips, Spéculoos, Red Velvet & plus</li>
+        <li class="mb-2"><span class="text-brand-pink fw-bold">♥</span> Ramassage ou livraison locale</li>
+        <li><span class="text-brand-pink fw-bold">♥</span> Paiement simple : comptant ou virement Interac</li>
+      </ul>
+    </div>
+  </div>
+
+  <section class="events-section mb-5" aria-labelledby="events-heading">
+    <div class="events-section__inner panel-card panel-body text-center">
+      <p class="brand-script mb-2">Événements & traiteur</p>
+      <h2 id="events-heading" class="mb-3">On s'occupe de vos célébrations</h2>
+      <p class="text-muted mx-auto events-section__lead mb-4">
+        En plus des commandes en ligne, nous préparons des biscuits artisanaux pour tous vos moments spéciaux —
+        que ce soit une petite fête entre amis ou un grand événement. Boîtes personnalisées, quantités sur mesure
+        et saveurs au choix : dites-nous votre projet, on s'en occupe avec le même soin que pour chaque biscuit.
+      </p>
+      <ul class="events-tags list-unstyled d-flex flex-wrap justify-content-center gap-2 mb-4" role="list">
+        <li><span class="events-tag">🎂 Anniversaires</span></li>
+        <li><span class="events-tag">👶 Baby shower</span></li>
+        <li><span class="events-tag">💍 Mariages & fiançailles</span></li>
+        <li><span class="events-tag">🎓 Graduations</span></li>
+        <li><span class="events-tag">🏢 Événements corporatifs</span></li>
+        <li><span class="events-tag">🍽️ Traiteur & catering</span></li>
+        <li><span class="events-tag">🎉 Fêtes privées</span></li>
+        <li><span class="events-tag">💝 Cadeaux d'entreprise</span></li>
+      </ul>
+      <p class="small text-muted mb-4">
+        Commande groupée, livraison ou ramassage — contactez-nous pour discuter de votre date, du nombre d'invités et du mix de saveurs.
+      </p>
+      <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+        <a href="mailto:{{ config.ETRANSFER_EMAIL }}?subject=Demande%20événement%20-%20{{ config.BUSINESS_NAME|urlencode }}" class="btn btn-cookie rounded-pill px-4">Demander un devis</a>
+        <a href="tel:{{ config.CONTACT_PHONE|replace(' ','')|replace('(','')|replace(')','')|replace('-','')|replace('.','') }}" class="btn btn-outline-cookie rounded-pill px-4">{{ config.CONTACT_PHONE }}</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-4 mb-5 text-center">
+    <div class="col-md-4">
+      <div class="feature-card p-4 h-100">
+        <div class="feature-icon mb-2">🍪</div>
+        <h5>Fait maison</h5>
+        <p class="text-muted small mb-0">Pâtes préparées en petits lots pour une fraîcheur incomparable.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature-card p-4 h-100">
+        <div class="feature-icon mb-2">🎀</div>
+        <h5>Emballage soigné</h5>
+        <p class="text-muted small mb-0">Parfait pour vous faire plaisir ou offrir à quelqu'un de spécial.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature-card p-4 h-100">
+        <div class="feature-icon mb-2">💗</div>
+        <h5>Paiement facile</h5>
+        <p class="text-muted small mb-0">Comptant à la livraison ou virement Interac — sans frais de carte.</p>
+      </div>
+    </div>
+  </div>
+
+  {% if featured %}
+  <div class="page-header">
+    <h2>Nos coups de cœur</h2>
+    <p class="subtitle">Les favoris de nos clients</p>
+  </div>
+  <div class="row g-4 mb-4">
+    {% for product in featured %}
+    <div class="col-md-4">
+      <div class="card product-card h-100 border-0">
+        <a href="{{ url_for('public.product_detail', product_id=product.id) }}" class="text-decoration-none text-dark">
+          {% include '_product_image.html' %}
+        </a>
+        <div class="card-body">
+          <h5 class="card-title">{{ product.name }}</h5>
+          <p class="text-muted small">{{ product.description[:90] }}{% if product.description|length > 90 %}…{% endif %}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="price-tag">${{ "%.2f"|format(product.price_float) }}</span>
+            <a href="{{ url_for('public.product_detail', product_id=product.id) }}" class="btn btn-cookie btn-sm">Voir</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center px-2">
+    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center px-2">
+      <a href="{{ url_for('public.box_builder', size=6) }}" class="btn btn-cookie btn-lg rounded-pill">Boîte de 6</a>
+      <a href="{{ url_for('public.products') }}" class="btn btn-outline-cookie btn-lg rounded-pill">Tout le menu</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

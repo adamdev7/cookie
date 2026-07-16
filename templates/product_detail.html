@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — {{ config.BUSINESS_NAME }}{% endblock %}
+{% block content %}
+<div class="container container-site pb-5 site-section">
+  <nav aria-label="breadcrumb" class="mb-3 pt-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('public.products') }}">Menu</a></li>
+      <li class="breadcrumb-item active">{{ product.name }}</li>
+    </ol>
+  </nav>
+  <div class="row g-4 align-items-start">
+    <div class="col-md-6">
+      <div class="panel-card overflow-hidden">
+        {% if product.image_url %}
+        <img src="{{ url_for('static', filename=product.image_url) }}" class="product-detail-img" alt="{{ product.name }}" onerror="this.src='{{ url_for('static', filename='images/hero-cookies-box.png') }}'">
+        {% else %}
+        <img src="{{ url_for('static', filename='images/hero-cookies-box.png') }}" class="product-detail-img" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-6">
+      <p class="brand-script mb-1">Biscuit artisanal</p>
+      <h1 class="text-uppercase">{{ product.name }}</h1>
+      <p class="price-tag fs-2 mb-3">${{ "%.2f"|format(product.price_float) }}</p>
+      <p class="lead text-muted">{{ product.description }}</p>
+      <form action="{{ url_for('public.cart_add', product_id=product.id) }}" method="post" class="panel-card panel-body mt-4">
+        <input type="hidden" name="next" value="{{ url_for('public.cart') }}">
+        <div class="row g-3 align-items-stretch align-items-sm-end">
+          <div class="col-12 col-sm-auto">
+            <label class="form-label fw-semibold" for="quantity">Quantité</label>
+            <input type="number" name="quantity" id="quantity" class="form-control form-control-lg rounded-3 qty-input-mobile" value="1" min="1" max="99">
+          </div>
+          <div class="col-12 col-sm">
+            <label class="form-label fw-semibold d-none d-sm-block">&nbsp;</label>
+            <button type="submit" class="btn btn-cookie btn-lg w-100 rounded-pill">Ajouter au panier</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

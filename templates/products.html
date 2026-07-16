@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Menu — {{ config.BUSINESS_NAME }}{% endblock %}
+{% block content %}
+<div class="container container-site">
+  <div class="menu-banner">
+    <img src="{{ url_for('static', filename='images/menu-showcase.png') }}" alt="Nos six saveurs">
+  </div>
+</div>
+
+<div class="container container-site pb-5 site-section">
+  <div class="page-header">
+    <h1>Commander</h1>
+    <p class="subtitle brand-script">À l'unité ou en boîte — vous choisissez le mix</p>
+  </div>
+
+  <section class="mb-5">
+    <h2 class="h4 mb-3" style="color: var(--brand-pink);">Boîtes cadeaux</h2>
+    <p class="text-muted small mb-3">Composez votre assortiment parmi nos 6 saveurs.</p>
+    <div class="row g-3">
+      <div class="col-sm-6">
+        <div class="panel-card panel-body h-100 text-center">
+          <div class="display-6 mb-2">🎁</div>
+          <h3 class="h5">Boîte de 6</h3>
+          <p class="price-tag fs-4 mb-3">${{ "%.2f"|format(box_6_price) }}</p>
+          <a href="{{ url_for('public.box_builder', size=6) }}" class="btn btn-cookie w-100 rounded-pill">Composer ma boîte</a>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="panel-card panel-body h-100 text-center">
+          <div class="display-6 mb-2">🎀</div>
+          <h3 class="h5">Boîte de 12</h3>
+          <p class="price-tag fs-4 mb-3">${{ "%.2f"|format(box_12_price) }}</p>
+          <a href="{{ url_for('public.box_builder', size=12) }}" class="btn btn-cookie w-100 rounded-pill">Composer ma boîte</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h4 mb-3" style="color: var(--brand-pink);">Biscuits à l'unité</h2>
+    <p class="text-muted small mb-4">Choisissez autant de biscuits que vous voulez, par saveur.</p>
+
+    {% if flavors %}
+    <div class="row g-4">
+      {% for product in flavors %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="card product-card h-100 border-0">
+          <a href="{{ url_for('public.product_detail', product_id=product.id) }}" class="text-decoration-none text-dark">
+            {% include '_product_image.html' %}
+          </a>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="text-muted small flex-grow-1">{{ product.description }}</p>
+            <p class="price-tag mb-3">${{ "%.2f"|format(product.price_float) }} <span class="text-muted fw-normal small">/ biscuit</span></p>
+            <form action="{{ url_for('public.cart_add', product_id=product.id) }}" method="post" class="mt-auto">
+              <div class="d-flex gap-2 align-items-stretch">
+                <input type="number" name="quantity" value="1" min="1" max="99" class="form-control rounded-3 text-center" style="max-width:4.5rem" inputmode="numeric" aria-label="Quantité">
+                <button type="submit" class="btn btn-cookie flex-grow-1 rounded-pill">Ajouter</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center panel-card panel-body py-5">
+      <p class="text-muted mb-3">Le menu arrive bientôt!</p>
+      <a href="{{ url_for('public.index') }}" class="btn btn-cookie">Retour à l'accueil</a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

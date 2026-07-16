@@ -1,0 +1,7 @@
+<div class="product-img-wrap">
+{% if product.image_url %}
+  <img src="{{ url_for('static', filename=product.image_url) }}" class="product-img w-100" alt="{{ product.name }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/hero-cookies-box.png') }}';">
+{% else %}
+  <img src="{{ url_for('static', filename='images/hero-cookies-box.png') }}" class="product-img w-100" alt="{{ product.name }}">
+{% endif %}
+</div>
