@@ -33,6 +33,12 @@
       else hint.textContent = "Parfait! Vous pouvez ajouter au panier.";
       hint.classList.remove("d-none");
     }
+    const hintMobile = document.getElementById("box-hint-mobile");
+    if (hintMobile) {
+      if (t < size) hintMobile.textContent = "Encore " + (size - t) + " biscuit(s)";
+      else if (t > size) hintMobile.textContent = "Retirez " + (t - size) + " biscuit(s)";
+      else hintMobile.textContent = "Parfait — prêt à ajouter!";
+    }
     inputs.forEach(function (inp) {
       const plus = document.querySelector('.box-plus[data-target="' + inp.id + '"]');
       if (plus) plus.disabled = t >= size;

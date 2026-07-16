@@ -44,12 +44,19 @@ def create_app(config_class=Config):
 
     @app.context_processor
     def inject_globals():
+        from app.cart import cart_item_count
+
         unit = app.config["COOKIE_UNIT_PRICE"]
+        try:
+            count = cart_item_count()
+        except Exception:
+            count = 0
         return {
             "config": app.config,
             "cookie_unit_price": unit,
             "box_6_price": unit * 6,
             "box_12_price": unit * 12,
+            "cart_count": count,
         }
 
     with app.app_context():

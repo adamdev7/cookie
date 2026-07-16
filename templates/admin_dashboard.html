@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -81,7 +81,45 @@
             </select>
           </div>
         </form>
-        <div class="table-responsive table-responsive-mobile">
+        <div class="d-md-none">
+          {% for order in orders %}
+          <div class="panel-card panel-body mb-3 admin-order-card">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <div>
+                <div class="fw-bold">#{{ order.id }} — {{ order.customer_name }}</div>
+                <div class="small text-muted">{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else '' }}</div>
+              </div>
+              <div class="price-tag">${{ "%.2f"|format(order.total_float) }}</div>
+            </div>
+            <div class="small mb-2">
+              <a href="tel:{{ order.phone }}" class="text-decoration-none">{{ order.phone }}</a><br>
+              <span class="text-break">{{ order.email }}</span>
+              {% if order.address %}<br>{{ order.address }}{% endif %}
+            </div>
+            <div class="small text-muted mb-2">
+              {% for item in order.items %}
+              {% if item.line_type == 'box' %}
+              {{ item.product.name if item.product else '?' }} — {{ item.box_mix_label(flavor_map) }}<br>
+              {% else %}
+              {{ item.product.name if item.product else '?' }} ×{{ item.quantity }}<br>
+              {% endif %}
+              {% endfor %}
+            </div>
+            <div class="small mb-2">{{ order.delivery_type }} · {{ order.payment_method }}</div>
+            <form action="{{ url_for('admin.update_order_status', order_id=order.id) }}?status={{ status_filter }}" method="post" class="d-flex gap-2">
+              <select name="status" class="form-select form-select-sm flex-grow-1">
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-cookie btn-sm flex-shrink-0">OK</button>
+            </form>
+          </div>
+          {% else %}
+          <div class="panel-card panel-body text-center text-muted py-4">No orders yet</div>
+          {% endfor %}
+        </div>
+        <div class="table-responsive table-responsive-mobile d-none d-md-block">
           <table class="table table-sm table-hover bg-white rounded shadow-sm" style="min-width:720px">
             <thead class="table-light">
               <tr>

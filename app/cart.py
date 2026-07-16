@@ -96,6 +96,15 @@ def cart_is_empty(cart: dict | None = None) -> bool:
     return not cart.get("flavors") and not cart.get("boxes")
 
 
+def cart_item_count(cart: dict | None = None) -> int:
+    """Total cookies in cart (flavors + boxes) for the nav badge."""
+    cart = cart or get_cart()
+    total = sum(int(q) for q in cart.get("flavors", {}).values())
+    for box in cart.get("boxes", []):
+        total += int(box.get("size") or 0)
+    return total
+
+
 def build_cart_lines():
     """Return display lines and subtotal for templates/checkout."""
     cart = get_cart()

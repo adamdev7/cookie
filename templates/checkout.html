@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Caisse — {{ config.BUSINESS_NAME }}{% endblock %}
 {% block content %}
-<div class="container container-site pb-5 site-section has-mobile-bar" style="max-width: 960px;">
+<div class="container container-site pb-5 site-section has-mobile-bar has-mobile-bar--tall" style="max-width: 960px;">
   <div class="page-header pt-3">
     <h1>Finaliser la commande</h1>
     <p class="subtitle">Paiement comptant ou Interac — pas de carte en ligne</p>
@@ -9,8 +9,8 @@
 
   <div class="row g-4 flex-column flex-lg-row">
     <div class="col-lg-5 checkout-summary-mobile">
-      <div class="panel-card panel-body sticky-lg-top mb-0 mb-lg-0" style="top: 6rem;">
-        <h5 class="mb-3" style="color: var(--brand-pink);">Résumé</h5>
+      <div class="panel-card panel-body sticky-lg-top mb-0" style="top: 6rem;">
+        <h5 class="mb-3 text-brand-pink">Résumé</h5>
         <ul class="list-unstyled small mb-3">
           {% for line in lines %}
           <li class="d-flex justify-content-between py-2 border-bottom border-light gap-2">
@@ -42,43 +42,43 @@
     </div>
     <div class="col-lg-7">
       <form action="{{ url_for('public.checkout') }}" method="post" id="checkout-form" class="panel-card panel-body">
-        <h5 class="mb-3" style="color: var(--brand-pink);">Coordonnées</h5>
+        <h5 class="mb-3 text-brand-pink">Coordonnées</h5>
         <div class="mb-3">
           <label class="form-label fw-semibold" for="customer_name">Nom complet *</label>
-          <input type="text" class="form-control rounded-3" id="customer_name" name="customer_name" required>
+          <input type="text" class="form-control form-control-lg rounded-3" id="customer_name" name="customer_name" autocomplete="name" required>
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold" for="phone">Téléphone *</label>
-          <input type="tel" class="form-control rounded-3" id="phone" name="phone" required>
+          <input type="tel" class="form-control form-control-lg rounded-3" id="phone" name="phone" autocomplete="tel" inputmode="tel" required>
         </div>
         <div class="mb-3">
           <label class="form-label fw-semibold" for="email">Courriel *</label>
-          <input type="email" class="form-control rounded-3" id="email" name="email" required>
+          <input type="email" class="form-control form-control-lg rounded-3" id="email" name="email" autocomplete="email" inputmode="email" required>
         </div>
 
-        <h5 class="mb-3 mt-4" style="color: var(--brand-pink);">Livraison</h5>
-        <div class="mb-3">
-          <div class="form-check mb-2">
+        <h5 class="mb-3 mt-4 text-brand-pink">Livraison</h5>
+        <div class="mb-3 choice-stack">
+          <div class="form-check choice-option">
             <input class="form-check-input" type="radio" name="delivery_type" id="pickup" value="pickup" checked>
             <label class="form-check-label" for="pickup">Ramassage (gratuit)</label>
           </div>
-          <div class="form-check">
+          <div class="form-check choice-option">
             <input class="form-check-input" type="radio" name="delivery_type" id="delivery" value="delivery">
             <label class="form-check-label" for="delivery">Livraison (+${{ "%.2f"|format(delivery_fee) }})</label>
           </div>
         </div>
         <div class="mb-3 d-none" id="address-group">
           <label class="form-label fw-semibold" for="address">Adresse de livraison *</label>
-          <textarea class="form-control rounded-3" id="address" name="address" rows="2" placeholder="Rue, ville, code postal"></textarea>
+          <textarea class="form-control form-control-lg rounded-3" id="address" name="address" rows="3" autocomplete="street-address" placeholder="Rue, ville, code postal"></textarea>
         </div>
 
-        <h5 class="mb-3 mt-4" style="color: var(--brand-pink);">Paiement</h5>
-        <div class="mb-3">
-          <div class="form-check mb-2">
+        <h5 class="mb-3 mt-4 text-brand-pink">Paiement</h5>
+        <div class="mb-3 choice-stack">
+          <div class="form-check choice-option">
             <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash" checked>
             <label class="form-check-label" for="cash">Comptant (à la livraison ou au ramassage)</label>
           </div>
-          <div class="form-check">
+          <div class="form-check choice-option">
             <input class="form-check-input" type="radio" name="payment_method" id="etransfer" value="etransfer">
             <label class="form-check-label" for="etransfer">Virement Interac</label>
           </div>

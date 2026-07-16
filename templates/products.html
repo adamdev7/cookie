@@ -43,7 +43,7 @@
     {% if flavors %}
     <div class="row g-4">
       {% for product in flavors %}
-      <div class="col-sm-6 col-lg-4">
+      <div class="col-12 col-sm-6 col-lg-4">
         <div class="card product-card h-100 border-0">
           <a href="{{ url_for('public.product_detail', product_id=product.id) }}" class="text-decoration-none text-dark">
             {% include '_product_image.html' %}
@@ -53,8 +53,8 @@
             <p class="text-muted small flex-grow-1">{{ product.description }}</p>
             <p class="price-tag mb-3">${{ "%.2f"|format(product.price_float) }} <span class="text-muted fw-normal small">/ biscuit</span></p>
             <form action="{{ url_for('public.cart_add', product_id=product.id) }}" method="post" class="mt-auto">
-              <div class="d-flex gap-2 align-items-stretch">
-                <input type="number" name="quantity" value="1" min="1" max="99" class="form-control rounded-3 text-center" style="max-width:4.5rem" inputmode="numeric" aria-label="Quantité">
+              <div class="product-add-row">
+                <input type="number" name="quantity" value="1" min="1" max="99" class="form-control rounded-3 text-center product-qty-input" inputmode="numeric" aria-label="Quantité">
                 <button type="submit" class="btn btn-cookie flex-grow-1 rounded-pill">Ajouter</button>
               </div>
             </form>

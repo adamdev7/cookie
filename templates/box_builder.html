@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Boîte de {{ box_size }} — {{ config.BUSINESS_NAME }}{% endblock %}
 {% block content %}
-<div class="container container-site pb-5 site-section {% if true %}has-mobile-bar{% endif %}">
+<div class="container container-site pb-5 site-section has-mobile-bar has-mobile-bar--tall">
   <nav aria-label="breadcrumb" class="pt-3 mb-2">
-    <ol class="breadcrumb">
+    <ol class="breadcrumb mb-0">
       <li class="breadcrumb-item"><a href="{{ url_for('public.products') }}">Menu</a></li>
       <li class="breadcrumb-item active">Boîte de {{ box_size }}</li>
     </ol>
@@ -30,16 +30,16 @@
       <div class="row g-3">
         {% for flavor in flavors %}
         <div class="col-12 col-md-6">
-          <div class="d-flex align-items-center gap-3 p-2 rounded-3 border border-light bg-white">
-            <img src="{{ url_for('static', filename=flavor.image_url) }}" alt="{{ flavor.name }}" class="rounded-3 flex-shrink-0" width="72" height="72" style="object-fit:cover">
-            <div class="flex-grow-1 min-w-0">
-              <div class="fw-bold text-uppercase small" style="color: var(--brand-pink);">{{ flavor.name }}</div>
-              <div class="text-muted small text-truncate">{{ flavor.description }}</div>
+          <div class="box-flavor-row">
+            <img src="{{ url_for('static', filename=flavor.image_url) }}" alt="{{ flavor.name }}" class="box-flavor-row__img" width="64" height="64">
+            <div class="box-flavor-row__info">
+              <div class="fw-bold text-uppercase small text-brand-pink">{{ flavor.name }}</div>
+              <div class="text-muted small box-flavor-row__desc">{{ flavor.description }}</div>
             </div>
-            <div class="d-flex align-items-center gap-1 flex-shrink-0">
-              <button type="button" class="btn btn-outline-cookie btn-sm rounded-circle box-minus" data-target="flavor_{{ flavor.id }}" style="width:2.25rem;height:2.25rem;padding:0;">−</button>
-              <input type="number" name="flavor_{{ flavor.id }}" id="flavor_{{ flavor.id }}" value="0" min="0" max="{{ box_size }}" class="form-control form-control-sm text-center box-qty" style="width:3rem" inputmode="numeric" data-flavor-input>
-              <button type="button" class="btn btn-outline-cookie btn-sm rounded-circle box-plus" data-target="flavor_{{ flavor.id }}" style="width:2.25rem;height:2.25rem;padding:0;">+</button>
+            <div class="box-flavor-row__controls">
+              <button type="button" class="btn btn-outline-cookie box-step-btn box-minus" data-target="flavor_{{ flavor.id }}" aria-label="Retirer {{ flavor.name }}">−</button>
+              <input type="number" name="flavor_{{ flavor.id }}" id="flavor_{{ flavor.id }}" value="0" min="0" max="{{ box_size }}" class="form-control text-center box-qty" inputmode="numeric" data-flavor-input aria-label="Quantité {{ flavor.name }}">
+              <button type="button" class="btn btn-outline-cookie box-step-btn box-plus" data-target="flavor_{{ flavor.id }}" aria-label="Ajouter {{ flavor.name }}">+</button>
             </div>
           </div>
         </div>
@@ -55,6 +55,7 @@
   </form>
 
   <div class="mobile-action-bar d-lg-none" role="region" aria-label="Ajouter la boîte">
+    <p class="small text-muted text-center mb-2 d-lg-none" id="box-hint-mobile" aria-live="polite"></p>
     <button type="submit" form="box-form" class="btn btn-cookie btn-lg w-100 rounded-pill" id="box-submit-mobile" disabled>
       Ajouter la boîte — $<span id="box-price-mobile">{{ "%.2f"|format(box_price) }}</span>
     </button>

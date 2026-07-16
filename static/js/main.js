@@ -50,8 +50,8 @@
     });
   }
 
-  // Prevent double-tap zoom issues on iOS for buttons (optional polish)
-  document.querySelectorAll(".btn-cookie, .btn-cart-nav").forEach(function (btn) {
+  // Prevent double-tap zoom issues on iOS for buttons
+  document.querySelectorAll("a.btn, button.btn, .box-step-btn").forEach(function (btn) {
     btn.style.touchAction = "manipulation";
   });
 })();

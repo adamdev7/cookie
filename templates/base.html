@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#D81B60">
+  <meta name="format-detection" content="telephone=yes">
   <title>{% block title %}{{ config.BUSINESS_NAME }}{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
@@ -11,20 +12,25 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-cookie sticky-top py-2 py-lg-3">
     <div class="container container-site">
-      <a class="navbar-brand navbar-brand-cookie" href="{{ url_for('public.index') }}">
+      <a class="navbar-brand navbar-brand-cookie me-2" href="{{ url_for('public.index') }}">
         <span class="brand-name">{{ config.BUSINESS_NAME }}</span>
-        <small>Chaque biscuit raconte une histoire</small>
+        <small class="brand-tagline">Chaque biscuit raconte une histoire</small>
       </a>
-      <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Ouvrir le menu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <div class="d-flex align-items-center gap-2 order-lg-last">
+        <a class="btn btn-cart-nav btn-cart-nav--compact rounded-pill px-3 d-lg-none" href="{{ url_for('public.cart') }}" aria-label="Panier{% if cart_count %} ({{ cart_count }}){% endif %}">
+          Panier{% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
+        </a>
+        <button class="navbar-toggler border-0 shadow-none d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Ouvrir le menu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
       <div class="collapse navbar-collapse" id="navMain">
         <ul class="navbar-nav ms-auto align-items-stretch align-items-lg-center gap-lg-1 pt-3 pt-lg-0">
           <li class="nav-item"><a class="nav-link nav-link-mobile" href="{{ url_for('public.index') }}">Accueil</a></li>
           <li class="nav-item"><a class="nav-link nav-link-mobile" href="{{ url_for('public.products') }}">Nos biscuits</a></li>
-          <li class="nav-item mt-2 mt-lg-0 ms-lg-2">
-            <a class="btn btn-cart-nav rounded-pill w-100 w-lg-auto px-4" href="{{ url_for('public.cart') }}">
-              Panier
+          <li class="nav-item mt-2 mt-lg-0 ms-lg-2 d-none d-lg-block">
+            <a class="btn btn-cart-nav rounded-pill px-4" href="{{ url_for('public.cart') }}">
+              Panier{% if cart_count %} <span class="cart-badge cart-badge--dark">{{ cart_count }}</span>{% endif %}
             </a>
           </li>
         </ul>
@@ -35,7 +41,7 @@
   <main class="py-0">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="container pt-3">
+        <div class="container container-site pt-3">
           {% for category, message in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
               {{ message }}
@@ -49,12 +55,14 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container text-center">
+    <div class="container container-site text-center">
       <p class="brand-script mb-2">Chaque biscuit raconte une histoire</p>
       <p class="mb-1 fw-semibold">{{ config.BUSINESS_NAME }}</p>
       <p class="mb-0 small opacity-75 footer-contact">
         <a href="tel:{{ config.CONTACT_PHONE|replace(' ','')|replace('(','')|replace(')','')|replace('-','')|replace('.','') }}" class="footer-phone">{{ config.CONTACT_PHONE }}</a>
-        <br class="d-sm-none"> <span class="d-none d-sm-inline">· </span>{{ config.ETRANSFER_EMAIL }}
+        <br class="d-sm-none">
+        <span class="d-none d-sm-inline"> · </span>
+        <a href="mailto:{{ config.ETRANSFER_EMAIL }}" class="footer-email">{{ config.ETRANSFER_EMAIL }}</a>
       </p>
     </div>
   </footer>
