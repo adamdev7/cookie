@@ -37,7 +37,7 @@ class Config:
     # Business
     BUSINESS_NAME = _env("BUSINESS_NAME", "Biscuits faits avec amour")
     ETRANSFER_EMAIL = _env("ETRANSFER_EMAIL", "orders@example.com")
-    CONTACT_PHONE = _env("CONTACT_PHONE", "(555) 123-4567")
+    CONTACT_PHONE = _env("CONTACT_PHONE", "514-594-4092")
 
     # Telegram
     TELEGRAM_BOT_TOKEN = _env("TELEGRAM_BOT_TOKEN", "")

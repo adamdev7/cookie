@@ -52,7 +52,10 @@
     <div class="container text-center">
       <p class="brand-script mb-2">Chaque biscuit raconte une histoire</p>
       <p class="mb-1 fw-semibold">{{ config.BUSINESS_NAME }}</p>
-      <p class="mb-0 small opacity-75 footer-contact">{{ config.CONTACT_PHONE }}<br class="d-sm-none"> <span class="d-none d-sm-inline">· </span>{{ config.ETRANSFER_EMAIL }}</p>
+      <p class="mb-0 small opacity-75 footer-contact">
+        <a href="tel:{{ config.CONTACT_PHONE|replace(' ','')|replace('(','')|replace(')','')|replace('-','')|replace('.','') }}" class="footer-phone">{{ config.CONTACT_PHONE }}</a>
+        <br class="d-sm-none"> <span class="d-none d-sm-inline">· </span>{{ config.ETRANSFER_EMAIL }}
+      </p>
     </div>
   </footer>
 
