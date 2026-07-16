@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Menu — {{ config.BUSINESS_NAME }}{% endblock %}
 {% block content %}
-<div class="container container-site">
+<div class="container container-site pt-3">
   <div class="menu-banner">
     <img src="{{ url_for('static', filename='images/menu-showcase.png') }}" alt="Nos six saveurs">
   </div>
@@ -10,34 +10,35 @@
 <div class="container container-site pb-5 site-section">
   <div class="page-header">
     <h1>Commander</h1>
-    <p class="subtitle brand-script">À l'unité ou en boîte — vous choisissez le mix</p>
+    <p class="subtitle">Commencez par une boîte — ou choisissez à l'unité</p>
   </div>
 
-  <section class="mb-5">
-    <h2 class="h4 mb-3" style="color: var(--brand-pink);">Boîtes cadeaux</h2>
+  <section class="mb-5" aria-labelledby="boxes-menu-heading">
+    <h2 id="boxes-menu-heading" class="h4 mb-3 text-brand-pink">Boîtes cadeaux</h2>
     <p class="text-muted small mb-3">Composez votre assortiment parmi nos 6 saveurs.</p>
     <div class="row g-3">
       <div class="col-sm-6">
-        <div class="panel-card panel-body h-100 text-center">
-          <div class="display-6 mb-2">🎁</div>
-          <h3 class="h5">Boîte de 6</h3>
-          <p class="price-tag fs-4 mb-3">${{ "%.2f"|format(box_6_price) }}</p>
-          <a href="{{ url_for('public.box_builder', size=6) }}" class="btn btn-cookie w-100 rounded-pill">Composer ma boîte</a>
-        </div>
+        <a href="{{ url_for('public.box_builder', size=6) }}" class="box-offer text-decoration-none h-100">
+          <div class="box-offer__emoji">🎁</div>
+          <h3 class="box-offer__title">Boîte de 6</h3>
+          <p class="box-offer__price">${{ "%.2f"|format(box_6_price) }}</p>
+          <span class="btn btn-cookie rounded-pill mt-1">Composer ma boîte</span>
+        </a>
       </div>
       <div class="col-sm-6">
-        <div class="panel-card panel-body h-100 text-center">
-          <div class="display-6 mb-2">🎀</div>
-          <h3 class="h5">Boîte de 12</h3>
-          <p class="price-tag fs-4 mb-3">${{ "%.2f"|format(box_12_price) }}</p>
-          <a href="{{ url_for('public.box_builder', size=12) }}" class="btn btn-cookie w-100 rounded-pill">Composer ma boîte</a>
-        </div>
+        <a href="{{ url_for('public.box_builder', size=12) }}" class="box-offer box-offer--featured text-decoration-none h-100">
+          <span class="box-offer__badge">Populaire</span>
+          <div class="box-offer__emoji">🎀</div>
+          <h3 class="box-offer__title">Boîte de 12</h3>
+          <p class="box-offer__price">${{ "%.2f"|format(box_12_price) }}</p>
+          <span class="btn btn-cookie rounded-pill mt-1">Composer ma boîte</span>
+        </a>
       </div>
     </div>
   </section>
 
   <section>
-    <h2 class="h4 mb-3" style="color: var(--brand-pink);">Biscuits à l'unité</h2>
+    <h2 class="h4 mb-3 text-brand-pink">Biscuits à l'unité</h2>
     <p class="text-muted small mb-4">Choisissez autant de biscuits que vous voulez, par saveur.</p>
 
     {% if flavors %}

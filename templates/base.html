@@ -7,7 +7,7 @@
   <meta name="format-detection" content="telephone=yes">
   <title>{% block title %}{{ config.BUSINESS_NAME }}{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/style.css', v='20260716b') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css', v='20260716c') }}" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-cookie sticky-top py-2 py-lg-3">
@@ -64,11 +64,14 @@
         <span class="d-none d-sm-inline"> · </span>
         <a href="mailto:{{ config.ETRANSFER_EMAIL }}" class="footer-email">{{ config.ETRANSFER_EMAIL }}</a>
       </p>
+      <p class="mt-3 mb-0">
+        <a href="{{ url_for('public.box_builder', size=6) }}" class="btn btn-sm btn-light rounded-pill px-3 fw-bold" style="color: var(--brand-pink);">Commander une boîte</a>
+      </p>
     </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='js/main.js', v='20260716b') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js', v='20260716c') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

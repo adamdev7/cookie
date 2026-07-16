@@ -25,8 +25,15 @@
     }
     if (progress) progress.style.width = pct + "%";
     const ok = t === size;
-    if (submitDesktop) submitDesktop.disabled = !ok;
-    if (submitMobile) submitMobile.disabled = !ok;
+    if (submitDesktop) {
+      submitDesktop.disabled = !ok;
+      submitDesktop.textContent = ok
+        ? "Ajouter au panier"
+        : "Choisissez " + size + " biscuits";
+    }
+    if (submitMobile) {
+      submitMobile.disabled = !ok;
+    }
     if (hint) {
       if (t < size) hint.textContent = "Encore " + (size - t) + " biscuit(s) à choisir.";
       else if (t > size) hint.textContent = "Trop de biscuits — retirez " + (t - size) + ".";
@@ -40,8 +47,13 @@
       else hintMobile.textContent = "Parfait — prêt à ajouter!";
     }
     inputs.forEach(function (inp) {
+      const val = parseInt(inp.value, 10) || 0;
       const plus = document.querySelector('.box-plus[data-target="' + inp.id + '"]');
+      const minus = document.querySelector('.box-minus[data-target="' + inp.id + '"]');
+      const card = inp.closest("[data-flavor-card]");
       if (plus) plus.disabled = t >= size;
+      if (minus) minus.disabled = val <= 0;
+      if (card) card.classList.toggle("is-active", val > 0);
     });
   }
 

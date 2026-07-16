@@ -51,7 +51,7 @@
   }
 
   // Prevent double-tap zoom issues on iOS for buttons
-  document.querySelectorAll("a.btn, button.btn, .box-step-btn").forEach(function (btn) {
+  document.querySelectorAll("a.btn, button.btn, .qty-stepper__btn").forEach(function (btn) {
     btn.style.touchAction = "manipulation";
   });
 })();

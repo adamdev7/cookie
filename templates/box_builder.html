@@ -10,8 +10,9 @@
   </nav>
 
   <div class="page-header mb-4">
+    <p class="brand-script mb-1">Votre mix, votre façon</p>
     <h1>Boîte de {{ box_size }} biscuits</h1>
-    <p class="subtitle">Choisissez {{ box_size }} biscuits au total — toutes saveurs confondues</p>
+    <p class="subtitle">Appuyez sur + pour chaque saveur jusqu'à {{ box_size }} biscuits</p>
     <p class="price-tag fs-3 mb-0">${{ "%.2f"|format(box_price) }}</p>
   </div>
 
@@ -23,23 +24,25 @@
           0 / {{ box_size }}
         </span>
       </div>
-      <div class="progress mb-4 rounded-pill" style="height: 8px;">
+      <div class="progress mb-4 rounded-pill box-progress" style="height: 10px;">
         <div class="progress-bar" id="box-progress" role="progressbar" style="width: 0%; background: var(--brand-pink);"></div>
       </div>
 
       <div class="row g-3">
         {% for flavor in flavors %}
         <div class="col-12 col-md-6">
-          <div class="box-flavor-row">
-            <img src="{{ url_for('static', filename=flavor.image_url) }}" alt="{{ flavor.name }}" class="box-flavor-row__img" width="64" height="64">
-            <div class="box-flavor-row__info">
-              <div class="fw-bold text-uppercase small text-brand-pink">{{ flavor.name }}</div>
-              <div class="text-muted small box-flavor-row__desc">{{ flavor.description }}</div>
+          <div class="box-flavor-card" data-flavor-card>
+            <div class="box-flavor-card__top">
+              <img src="{{ url_for('static', filename=flavor.image_url) }}" alt="{{ flavor.name }}" class="box-flavor-card__img" width="80" height="80">
+              <div class="box-flavor-card__info">
+                <div class="box-flavor-card__name">{{ flavor.name }}</div>
+                <div class="box-flavor-card__desc">{{ flavor.description }}</div>
+              </div>
             </div>
-            <div class="box-flavor-row__controls">
-              <button type="button" class="btn btn-outline-cookie box-step-btn box-minus" data-target="flavor_{{ flavor.id }}" aria-label="Retirer {{ flavor.name }}">−</button>
-              <input type="number" name="flavor_{{ flavor.id }}" id="flavor_{{ flavor.id }}" value="0" min="0" max="{{ box_size }}" class="form-control text-center box-qty" inputmode="numeric" data-flavor-input aria-label="Quantité {{ flavor.name }}">
-              <button type="button" class="btn btn-outline-cookie box-step-btn box-plus" data-target="flavor_{{ flavor.id }}" aria-label="Ajouter {{ flavor.name }}">+</button>
+            <div class="qty-stepper" role="group" aria-label="Quantité {{ flavor.name }}">
+              <button type="button" class="qty-stepper__btn box-minus" data-target="flavor_{{ flavor.id }}" aria-label="Retirer {{ flavor.name }}">−</button>
+              <input type="number" name="flavor_{{ flavor.id }}" id="flavor_{{ flavor.id }}" value="0" min="0" max="{{ box_size }}" class="qty-stepper__value box-qty" inputmode="numeric" data-flavor-input aria-label="Quantité {{ flavor.name }}" readonly>
+              <button type="button" class="qty-stepper__btn qty-stepper__btn--plus box-plus" data-target="flavor_{{ flavor.id }}" aria-label="Ajouter {{ flavor.name }}">+</button>
             </div>
           </div>
         </div>
@@ -55,7 +58,7 @@
   </form>
 
   <div class="mobile-action-bar d-lg-none" role="region" aria-label="Ajouter la boîte">
-    <p class="small text-muted text-center mb-2 d-lg-none" id="box-hint-mobile" aria-live="polite"></p>
+    <p class="small text-center mb-2 fw-semibold text-brand-pink" id="box-hint-mobile" aria-live="polite"></p>
     <button type="submit" form="box-form" class="btn btn-cookie btn-lg w-100 rounded-pill" id="box-submit-mobile" disabled>
       Ajouter la boîte — $<span id="box-price-mobile">{{ "%.2f"|format(box_price) }}</span>
     </button>
@@ -66,5 +69,5 @@
 <script>
   window.boxBuilderSize = {{ box_size }};
 </script>
-<script src="{{ url_for('static', filename='js/box-builder.js', v='20260716b') }}"></script>
+<script src="{{ url_for('static', filename='js/box-builder.js', v='20260716c') }}"></script>
 {% endblock %}
